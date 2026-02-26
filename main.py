@@ -61,9 +61,11 @@ async def get_feed(feed_name: str):
 
 # ========== PHASE 1: OPML-Export ==========
 @app.get("/export/opml")
-async def export_opml():
+async def export_opml(request: Request):
     """Exportiert alle Feeds als OPML für FreshRSS."""
     feeds = scraper.load_feeds()
+
+    base_url = str(request.base_url).rstrip("/")
 
     opml = [
         '<?xml version="1.0" encoding="UTF-8"?>',
@@ -86,7 +88,7 @@ async def export_opml():
     for category, cat_feeds in categories.items():
         opml.append(f'    <outline text="{scraper.escape_xml(category)}">')
         for feed in cat_feeds:
-            feed_url = f"/feed/{feed['name']}.xml"
+            feed_url = f"{base_url}/feed/{feed['name']}.xml"
             opml.append(
                 f'      <outline text="{scraper.escape_xml(feed["name"])}" '
                 f'htmlUrl="{feed["url"]}" type="rss" xmlUrl="{feed_url}"/>'
