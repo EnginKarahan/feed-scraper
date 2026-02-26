@@ -1,0 +1,17 @@
+# Füge dies zu deiner bestehenden docker-compose.yml hinzu:
+
+  feed-scraper:
+    build: ./feed-scraper
+    container_name: feed-scraper
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./feed-scraper/data:/app/data
+      - ./feed-scraper/config:/app/config
+    restart: unless-stopped
+    networks:
+      - infrastruktur_default
+
+networks:
+  infrastruktur_default:
+    external: true

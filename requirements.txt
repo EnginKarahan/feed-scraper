@@ -1,0 +1,12 @@
+requests
+beautifulsoup4
+feedgen
+fastapi
+uvicorn
+jinja2
+pyyaml
+tenacity
+requests-cache
+lxml
+python-dateutil
+schedule
