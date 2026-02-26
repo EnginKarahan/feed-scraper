@@ -107,10 +107,32 @@ async def export_opml():
 @app.post("/api/feeds/bulk")
 async def create_bulk_feeds(bulk: BulkFeedCreate):
     """Erstellt mehrere Feeds auf einmal."""
+    existing_feeds = scraper.load_feeds()
+    existing_urls = {scraper.normalize_url(f.get("url", "")) for f in existing_feeds}
+
     results = []
     errors = []
+    skipped = []
 
     for feed in bulk.feeds:
+        normalized_url = scraper.normalize_url(feed.url)
+
+        if normalized_url in existing_urls:
+            skipped.append(
+                {"name": feed.name, "url": feed.url, "reason": "URL existiert bereits"}
+            )
+            continue
+
+        if normalized_url in [scraper.normalize_url(r.get("url", "")) for r in results]:
+            skipped.append(
+                {
+                    "name": feed.name,
+                    "url": feed.url,
+                    "reason": "Doppelte URL in Eingabe",
+                }
+            )
+            continue
+
         try:
             result = scraper.add_feed(
                 name=feed.name,
@@ -119,6 +141,7 @@ async def create_bulk_feeds(bulk: BulkFeedCreate):
                 description=feed.description or "",
             )
             results.append(result)
+            existing_urls.add(normalized_url)
         except ValueError as e:
             errors.append({"name": feed.name, "error": str(e)})
         except Exception as e:
@@ -128,6 +151,8 @@ async def create_bulk_feeds(bulk: BulkFeedCreate):
         "status": "completed",
         "created": len(results),
         "errors": len(errors),
+        "skipped": len(skipped),
+        "skipped_details": skipped[:10],
         "feeds": results,
         "error_details": errors,
     }
@@ -173,16 +198,44 @@ async def import_opml(request: Request):
         return {"status": "error", "error": "No content received"}
 
     try:
-        feeds = scraper.parse_opml(content)
-        logger.info(f"OPML Import: parsed {len(feeds)} feeds")
+        feeds = scraper.load_feeds()
+        existing_urls = {scraper.normalize_url(f.get("url", "")) for f in feeds}
 
-        if not feeds:
+        parsed_feeds = scraper.parse_opml(content)
+        logger.info(f"OPML Import: parsed {len(parsed_feeds)} feeds")
+
+        if not parsed_feeds:
             return {"status": "error", "error": "No feeds found in OPML"}
 
         results = []
         errors = []
+        skipped = []
 
-        for feed in feeds:
+        for feed in parsed_feeds:
+            normalized_url = scraper.normalize_url(feed.get("url", ""))
+
+            if normalized_url in existing_urls:
+                skipped.append(
+                    {
+                        "name": feed["name"],
+                        "url": feed["url"],
+                        "reason": "URL existiert bereits",
+                    }
+                )
+                continue
+
+            if normalized_url in [
+                scraper.normalize_url(r.get("url", "")) for r in results
+            ]:
+                skipped.append(
+                    {
+                        "name": feed["name"],
+                        "url": feed["url"],
+                        "reason": "Doppelte URL in OPML",
+                    }
+                )
+                continue
+
             try:
                 result = scraper.add_feed(
                     name=feed["name"],
@@ -191,6 +244,7 @@ async def import_opml(request: Request):
                     description=feed.get("description", ""),
                 )
                 results.append(result)
+                existing_urls.add(normalized_url)
             except ValueError as e:
                 errors.append({"name": feed["name"], "error": str(e)})
             except Exception as e:
@@ -200,6 +254,8 @@ async def import_opml(request: Request):
             "status": "completed",
             "imported": len(results),
             "errors": len(errors),
+            "skipped": len(skipped),
+            "skipped_details": skipped[:10],
             "error_details": errors[:10],
         }
     except Exception as e:

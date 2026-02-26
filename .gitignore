@@ -23,4 +23,6 @@ htmlcov/
 *.swp
 *.swo
 data/
+logs/
+db/
 *.xml

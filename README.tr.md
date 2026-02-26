@@ -8,7 +8,8 @@ Web siteleri icin RSS feed ureticisi.
 - FreshRSS ve diger okuyucularla uyumlu RSS export
 - Feed kesfi - RSS feed'leri otomatik bulur veya web sitesinden olusturur
 - Toplu import - ayni anda birden fazla URL ekle
-- OPML import/export
+- OPML import/export ve kopya kontrolu
+- URL kopya kontrolu (normallestirilmis karsilastirma)
 - Yedekleme ve geri yukleme
 - Zamanlanmis guncellemeler (gunde 2 kez)
 - Cok dilli arayuz (Almanca, Ingilizce, Turkce)

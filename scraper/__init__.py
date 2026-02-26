@@ -3,7 +3,7 @@ import json
 import os
 from datetime import datetime
 from typing import List, Dict, Optional
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 import requests
 from bs4 import BeautifulSoup
 from feedgen.feed import FeedGenerator
@@ -18,6 +18,27 @@ logging.basicConfig(
     handlers=[logging.FileHandler(LOG_FILE), logging.StreamHandler()],
 )
 logger = logging.getLogger(__name__)
+
+
+def normalize_url(url: str) -> str:
+    """Normalisiert eine URL für den Vergleich."""
+    if not url:
+        return ""
+
+    url = url.strip()
+
+    parsed = urlparse(url)
+
+    scheme = parsed.scheme.lower() if parsed.scheme else "https"
+    netloc = parsed.netloc.lower().replace("www.", "")
+    path = parsed.path.rstrip("/") or "/"
+    query = parsed.query
+
+    normalized = f"{scheme}://{netloc}{path}"
+    if query:
+        normalized += f"?{query}"
+
+    return normalized
 
 
 def load_feeds() -> List[Dict]:
@@ -48,6 +69,12 @@ def add_feed(
     for feed in feeds:
         if feed["name"] == name:
             raise ValueError(f"Feed '{name}' existiert bereits")
+
+    normalized_url = normalize_url(url)
+    for feed in feeds:
+        existing_normalized = normalize_url(feed.get("url", ""))
+        if existing_normalized == normalized_url:
+            raise ValueError(f"URL '{url}' existiert bereits als Feed '{feed['name']}'")
 
     feed = {
         "name": name,

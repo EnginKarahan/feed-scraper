@@ -485,7 +485,11 @@
             const result = await res.json();
             hideModal('bulkModal');
             form.reset();
-            showToast(`${result.created} feeds created, ${result.errors} errors`);
+            let msg = `${result.created} feeds created, ${result.errors} errors`;
+            if (result.skipped > 0) {
+                msg += `, ${result.skipped} skipped`;
+            }
+            showToast(msg);
             setTimeout(() => location.reload(), 1500);
         });
         
@@ -612,7 +616,14 @@
             
             const result = await res.json();
             hideModal('opmlImportModal');
-            showToast(`${result.imported} feeds imported`);
+            let msg = `${result.imported} feeds imported`;
+            if (result.skipped > 0) {
+                msg += `, ${result.skipped} skipped`;
+            }
+            if (result.errors > 0) {
+                msg += `, ${result.errors} errors`;
+            }
+            showToast(msg);
             setTimeout(() => location.reload(), 1500);
         });
         

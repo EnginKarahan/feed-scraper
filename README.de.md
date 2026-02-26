@@ -8,7 +8,8 @@ RSS-Feed-Generator fuer Webseiten ohne nativen RSS-Support.
 - RSS-Export kompatibel mit FreshRSS und anderen Readern
 - Feed-Discovery - findet RSS-Feeds automatisch oder erstellt welche von Webseiten
 - Bulk-Import - mehrere URLs gleichzeitig hinzufuegen
-- OPML Import/Export
+- OPML Import/Export mit Duplikatsuche
+- URL-Duplikatsuche (normalisierter Vergleich)
 - Backup und Restore
 - Geplante Aktualisierungen (2x taeglich)
 - Mehrsprachige Oberflaeche (Deutsch, Englisch, Tuerkisch)
