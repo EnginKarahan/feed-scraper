@@ -31,7 +31,17 @@ python main.py
 
 Acilir: http://localhost:5000
 
-### Docker
+### Docker (GHCR - Tavsiye Edilen)
+
+```bash
+# GitHub Container Registry'den cek
+docker pull ghcr.io/enginkarahan/feed-scraper:latest
+
+# Calistir
+docker run -d -p 5000:5000 -v $(pwd)/data:/app/data ghcr.io/enginkarahan/feed-scraper:latest
+```
+
+### Docker (Kendin Build Et)
 
 ```bash
 docker build -t feed-scraper .
@@ -45,7 +55,7 @@ Mevcut docker-compose.yml dosyaniza ekleyin:
 ```yaml
 services:
   feed-scraper:
-    image: enginkarahan/feed-scraper:latest
+    image: ghcr.io/enginkarahan/feed-scraper:latest
     ports:
       - "5000:5000"
     volumes:
@@ -53,7 +63,24 @@ services:
     restart: unless-stopped
 ```
 
-Guncelleme: `docker-compose pull && docker-compose up -d`
+Guncelleme: `docker compose pull && docker compose up -d`
+
+## Proje Yapisi
+
+```
+feed-scraper/
+├── main.py                    # FastAPI uygulamasi
+├── scraper/
+│   ├── __init__.py          # Paket disari aktarimlari & uyumluluk
+│   ├── config.py            # Yapilandirma
+│   ├── models.py            # Pydantic modelleri & tipler
+│   ├── feed_service.py      # Feed CRUD islemleri
+│   ├── rss_generator.py    # RSS feed uretimi
+│   ├── scraper.py          # Web scraping & makale cikarma
+│   └── opml_parser.py      # OPML import/export
+├── tests/                   # Test paketi
+└── templates/               # HTML sablonlari
+```
 
 ## API Uc Noktalari
 
@@ -67,7 +94,7 @@ Guncelleme: `docker-compose pull && docker-compose up -d`
 | POST | /api/feeds/{name}/refresh | Tek yenile |
 | POST | /api/refresh-all | Tumerini yenile |
 | DELETE | /api/feeds/{name} | Feed sil |
-| GET | /api/discover?url= | Feed keşfet |
+| GET | /api/discover?url= | Feed kesfet |
 | POST | /api/preview | Onizleme |
 | POST | /import/opml | OPML import et |
 | GET | /api/backup | Yedek indir |
@@ -85,6 +112,15 @@ Ortam degiskenleri:
 Veriler saklanir:
 - `data/db/feeds.json` - Feed yapilandirmasi
 - `data/feeds/*.xml` - Uretilen RSS feedleri
+
+## Gelistirme
+
+### Testleri calistir
+
+```bash
+pip install pytest
+pytest tests/
+```
 
 ## Dagitim
 

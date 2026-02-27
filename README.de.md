@@ -31,7 +31,17 @@ python main.py
 
 Oeffnen: http://localhost:5000
 
-### Docker
+### Docker (GHCR - Empfohlen)
+
+```bash
+# Von GitHub Container Registry ziehen
+docker pull ghcr.io/enginkarahan/feed-scraper:latest
+
+# Starten
+docker run -d -p 5000:5000 -v $(pwd)/data:/app/data ghcr.io/enginkarahan/feed-scraper:latest
+```
+
+### Docker (Selbst bauen)
 
 ```bash
 docker build -t feed-scraper .
@@ -45,7 +55,7 @@ Zur bestehenden docker-compose.yml hinzufuegen:
 ```yaml
 services:
   feed-scraper:
-    image: enginkarahan/feed-scraper:latest
+    image: ghcr.io/enginkarahan/feed-scraper:latest
     ports:
       - "5000:5000"
     volumes:
@@ -53,7 +63,24 @@ services:
     restart: unless-stopped
 ```
 
-Aktualisieren: `docker-compose pull && docker-compose up -d`
+Aktualisieren: `docker compose pull && docker compose up -d`
+
+## Projektstruktur
+
+```
+feed-scraper/
+├── main.py                    # FastAPI-Anwendung
+├── scraper/
+│   ├── __init__.py          # Paket-Exports & Kompatibilitaet
+│   ├── config.py            # Konfiguration
+│   ├── models.py            # Pydantic Models & Typen
+│   ├── feed_service.py      # Feed CRUD-Operationen
+│   ├── rss_generator.py     # RSS-Feed-Erstellung
+│   ├── scraper.py           # Web-Scraping & Artikel-Extraktion
+│   └── opml_parser.py       # OPML Import/Export
+├── tests/                   # Test-Suite
+└── templates/               # HTML-Templates
+```
 
 ## API Endpunkte
 
@@ -85,6 +112,15 @@ Umgebungsvariablen:
 Daten werden gespeichert in:
 - `data/db/feeds.json` - Feed-Konfiguration
 - `data/feeds/*.xml` - Generierte RSS-Feeds
+
+## Entwicklung
+
+### Tests ausfuehren
+
+```bash
+pip install pytest
+pytest tests/
+```
 
 ## Deployment
 
