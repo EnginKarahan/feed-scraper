@@ -1,6 +1,7 @@
 """Pydantic Models und Typen für den Feed-Scraper."""
 
-from typing import TypedDict, Optional
+from typing import Optional
+from typing_extensions import TypedDict
 from datetime import datetime
 from pydantic import BaseModel, Field
 
