@@ -65,7 +65,19 @@ async def export_opml(request: Request):
     """Exportiert alle Feeds als OPML für FreshRSS."""
     feeds = scraper.load_feeds()
 
-    base_url = str(request.base_url).rstrip("/")
+    # Basis-URL ermitteln: Header bevorzugen, dann Request-URL
+    base_url = request.headers.get("X-Base-Url")
+    if not base_url:
+        base_url = str(request.base_url).rstrip("/")
+
+    # Fallback für Docker/Proxy-Umgebungen
+    if not base_url or base_url == "/":
+        forward_host = request.headers.get("X-Forwarded-Host")
+        if forward_host:
+            scheme = request.headers.get("X-Forwarded-Proto", "http")
+            base_url = f"{scheme}://{forward_host}"
+        else:
+            base_url = "http://localhost:5000"
 
     opml = [
         '<?xml version="1.0" encoding="UTF-8"?>',
